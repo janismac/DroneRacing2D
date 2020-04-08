@@ -1,0 +1,1 @@
+addpath([getenv('USERPROFILE') '\casadi-windows-matlabR2016a-v3.5.1']);
