@@ -3,10 +3,12 @@ function optimize
     clc
     opti = casadi.Opti();
     [n_states, n_inputs, idx] = drone_ode_info;
-    n_timesteps = 300;
+    n_timesteps = 60;
 
     %% Setup optimization variables
     delta_t = opti.variable();
+    slack_obstacle = opti.variable();
+    slack_obstacle_weight = opti.parameter();
     state_trajectory = opti.variable(n_timesteps, n_states);
     input_trajectory = opti.variable(n_timesteps, n_inputs);
     
@@ -33,8 +35,8 @@ function optimize
     opti.subject_to(dxdt(1, idx.pitch_rate) == 0);
     
     % Final state
-    opti.subject_to(state_trajectory(end, idx.position_x) == 6);
-    opti.subject_to(state_trajectory(end, idx.position_y) == 3);
+    opti.subject_to(state_trajectory(end, idx.position_x) == 10);
+    opti.subject_to(state_trajectory(end, idx.position_y) == -5);
     opti.subject_to(state_trajectory(end, idx.velocity_x) == 0);
     opti.subject_to(state_trajectory(end, idx.velocity_y) == 0);
     opti.subject_to(state_trajectory(end, idx.pitch) == 0);
@@ -43,31 +45,49 @@ function optimize
     opti.subject_to(dxdt(end, idx.velocity_y) == 0);
     opti.subject_to(dxdt(end, idx.pitch_rate) == 0);
     
+    % Pitch limit
+    opti.subject_to(-80/180*pi < state_trajectory(:, idx.pitch) < 80/180*pi);
+    
+    % Obstacle avoidance
+    px = state_trajectory(:, idx.position_x);
+    py = state_trajectory(:, idx.position_y);
+    opti.subject_to((px - 5).^2 + (py + 3).^2 > 2^2 - slack_obstacle);
+    opti.subject_to(slack_obstacle > 0);
+    
     % Time must run forwards
     opti.subject_to(0.01 < delta_t < 1);
     
     % Objectives
     opti.minimize(...
-           100 * delta_t ...                    % Minimize time to target
-        + 1e-4 * sum(input_trajectory(:).^2));  % Minimize thrust variation
-    
-
+           100 * delta_t ...                       % Minimize time to target
+        + 1e-4 * sum(input_trajectory(:).^2) ...   % Minimize thrust variation
+        + slack_obstacle_weight * slack_obstacle); % Penalty for obstacle intrusion
     
     
     %% Run the optimization
     % Set some initial guesses first
     opti.set_initial(delta_t, 0.1);
+    opti.set_initial(slack_obstacle, 100);
     opti.set_initial(state_trajectory, 0);
     opti.set_initial(input_trajectory, 0);
     opti.set_initial(state_trajectory(:, idx.thrust_left), 9.81/2);
     opti.set_initial(state_trajectory(:, idx.thrust_right), 9.81/2);
-    opti.solver('ipopt');
-    sol = opti.solve();
     
+    opts = struct;
+    opts.ipopt.tol = 1e-4;
+    opti.solver('ipopt', opts);
+    
+    % Iterativeley increase the penalty for obstacle collision
+    for w = 10.^(-8:1:1)
+        opti.set_value(slack_obstacle_weight, w);
+        sol = opti.solve();
+        opti.set_initial(sol.value_variables());
+    end
     
     %% Save and animate the result
     x = sol.value(state_trajectory);
-    save trajectory x
+    t = (0:(n_timesteps-1)) * sol.value(delta_t);
+    save trajectory t x
     animate
 end
 

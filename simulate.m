@@ -7,7 +7,7 @@ function simulate
     initial_state(idx.thrust_right) = 5;
     
     [t,x] = ode45(@(t,y) closed_loop_ode(y), 0:0.01:10, initial_state);
-    save trajectory x
+    save trajectory t x
     animate
 end
 

@@ -1,6 +1,12 @@
 function animate
     
+    % Interpolate trajectroy for animation
     load trajectory
+    t2 = min(t):0.02:max(t);
+    x = interp1(t,x,t2);
+    
+    
+    % Figure setup
     figure(1)
     clf
     hold on
@@ -13,12 +19,19 @@ function animate
     ax.Position = [0.01 0.01 0.98 0.98];
     ax.Toolbar.Visible = 'off';
     axis equal
-    xlim([-4 10])
-    ylim([-3 4])
+    xlim([-4 10]+2)
+    ylim([-5 2]-1)
     ax.XTickLabel = [];
     ax.YTickLabel = [];
     
+    [~, ~, idx] = drone_ode_info;
     
+    % Draw trajectory
+    plot(x(:,idx.position_x), x(:,idx.position_y), 'r');
+    
+    % Draw obstacle
+    a = linspace(0,2*pi);
+    plot(1.7*cos(a)+5, 1.7*sin(a)-3, 'k');
 
     drone_surf = surf(...
         4/8*[-1 1; -1 1],...
@@ -35,7 +48,6 @@ function animate
     drone_surf.Parent = drone_transform;
     thrust_arrows_plot.Parent = drone_transform;
     
-    [~, ~, idx] = drone_ode_info;
     
     for i = 1:size(x,1)
         x_now = x(i, :);
