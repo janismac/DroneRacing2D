@@ -57,7 +57,7 @@ function animate
         thrust_arrows_plot.XData = [-1 -1 nan 1 1]*0.27;
         thrust_arrows_plot.YData = [0 Tl/10 nan 0 Tr/10]+0.2;
         
-        pause(1e-6)
+        pause(0.02)
         drawnow
     end
     

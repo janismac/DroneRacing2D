@@ -7,7 +7,7 @@ function simulate
     initial_state(idx.thrust_right) = 5;
     
     [t,x] = ode45(@(t,y) closed_loop_ode(y), 0:0.01:10, initial_state);
-    save trajectory t x
+    save trajectory x
     animate
 end
 
@@ -32,7 +32,6 @@ function u = drone_controller(x)
     %% Cascade control
     target_position = [6 3];
     position_error = position - target_position;
-%     position_error = position_error ./ max(norm(position_error)/5,1); % Distance saturation
     target_velocity = -0.5 * position_error;
     velocity_error = velocity - target_velocity;
     target_acceleration = [0 9.81] -1.5 * velocity_error;
