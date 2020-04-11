@@ -1,5 +1,6 @@
 function dxdt = drone_ode(x, u)
     
+    
     [~, ~, idx] = drone_ode_info;
     
     %% Unpack the state and input vectors
@@ -12,6 +13,10 @@ function dxdt = drone_ode(x, u)
     thrust_rate_left  = u(:, idx.thrust_rate_left);
     thrust_rate_right = u(:, idx.thrust_rate_right);
     
+    % Get a zero and one value that match the input type
+    zero = x(1)*0; 
+    one = x(1)*0+1;
+    
     %% Parameters
     mass = 1;
     moment_of_inertia = 0.02;
@@ -20,11 +25,11 @@ function dxdt = drone_ode(x, u)
 
     %% Equations of motion
     body_direction_up = [-sin(pitch), cos(pitch)];
-    direction_up = [zeros(size(x,1),1) ones(size(x,1),1)];
+    direction_up = repmat([zero one],size(x,1),1);
     
     acceleration = ...
         body_direction_up .* (thrust_left + thrust_right) ./ mass ...
-        + direction_up .* gravitational_acceleration;
+        - direction_up .* gravitational_acceleration;
     
     pitch_acceleration = (thrust_right - thrust_left) .* moment_arm ./ moment_of_inertia;
     
