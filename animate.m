@@ -2,7 +2,7 @@ function animate
     
     % Interpolate trajectroy for animation
     load trajectory
-    t2 = min(t):0.02:max(t);
+    t2 = min(t):0.015:max(t);
     x = interp1(t,x,t2);
     
     
@@ -31,7 +31,7 @@ function animate
     
     % Draw obstacle
     a = linspace(0,2*pi);
-    plot(1.7*cos(a)+5, 1.7*sin(a)-3, 'k');
+    plot(1.6*cos(a)+5, 1.6*sin(a)-3, 'k');
 
     drone_surf = surf(...
         4/8*[-1 1; -1 1],...
@@ -49,28 +49,30 @@ function animate
     thrust_arrows_plot.Parent = drone_transform;
     
     
-    for i = 1:size(x,1)
-        x_now = x(i, :);
-        
-        px = x_now(idx.position_x);
-        py = x_now(idx.position_y);
-        pitch = x_now(idx.pitch);
-        c = cos(pitch);
-        s = sin(pitch);
-        Tl = x_now(idx.thrust_left);
-        Tr = x_now(idx.thrust_right);
-        
-        drone_transform.Matrix = ...
-        [[ c,  -s,   0,  px]; ...
-         [ s,   c,   0,  py]; ...
-         [ 0,   0,   1,   0]; ...
-         [ 0,   0,   0,   1]];
+    while true
+        for i = 1:size(x,1)
+            x_now = x(i, :);
 
-        thrust_arrows_plot.XData = [-1 -1 nan 1 1]*0.27;
-        thrust_arrows_plot.YData = [0 Tl/10 nan 0 Tr/10]+0.2;
-        
-        pause(0.02)
-        drawnow
+            px = x_now(idx.position_x);
+            py = x_now(idx.position_y);
+            pitch = x_now(idx.pitch);
+            c = cos(pitch);
+            s = sin(pitch);
+            Tl = x_now(idx.thrust_left);
+            Tr = x_now(idx.thrust_right);
+
+            drone_transform.Matrix = ...
+            [[ c,  -s,   0,  px]; ...
+             [ s,   c,   0,  py]; ...
+             [ 0,   0,   1,   0]; ...
+             [ 0,   0,   0,   1]];
+
+            thrust_arrows_plot.XData = [-1 -1 nan 1 1]*0.27;
+            thrust_arrows_plot.YData = [0 Tl/10 nan 0 Tr/10]+0.2;
+
+            pause(0.02)
+            drawnow
+        end
     end
     
 end

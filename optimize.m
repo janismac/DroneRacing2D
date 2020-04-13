@@ -46,7 +46,7 @@ function optimize
     opti.subject_to(dxdt(end, idx.pitch_rate) == 0);
     
     % Pitch limit
-    opti.subject_to(-80/180*pi < state_trajectory(:, idx.pitch) < 80/180*pi);
+    opti.subject_to(-60/180*pi < state_trajectory(:, idx.pitch) < 60/180*pi);
     
     % Obstacle avoidance
     px = state_trajectory(:, idx.position_x);

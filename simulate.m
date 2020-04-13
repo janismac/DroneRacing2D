@@ -2,7 +2,6 @@ function simulate
     
     [n_states, n_inputs, idx] = drone_ode_info;
     initial_state = zeros(n_states, 1);
-    initial_state(idx.position_x) = -3;
     initial_state(idx.thrust_left) = 5;
     initial_state(idx.thrust_right) = 5;
     
@@ -30,7 +29,7 @@ function u = drone_controller(x)
     
     
     %% Cascade control
-    target_position = [6 3];
+    target_position = [10 -5];
     position_error = position - target_position;
     target_velocity = -0.5 * position_error;
     velocity_error = velocity - target_velocity;
