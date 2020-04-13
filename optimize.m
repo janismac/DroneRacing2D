@@ -51,7 +51,10 @@ function optimize
     % Obstacle avoidance
     px = state_trajectory(:, idx.position_x);
     py = state_trajectory(:, idx.position_y);
-    opti.subject_to((px - 5).^2 + (py + 3).^2 > 2^2 - slack_obstacle);
+    [obstacle_x, obstacle_y, obstacle_radius] = obstacles;
+    for i = 1:length(obstacle_x)
+        opti.subject_to((px - obstacle_x(i)).^2 + (py - obstacle_y(i)).^2 > obstacle_radius(i)^2 - slack_obstacle);
+    end
     opti.subject_to(slack_obstacle > 0);
     
     % Time must run forwards

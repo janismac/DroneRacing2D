@@ -29,9 +29,13 @@ function animate
     % Draw trajectory
     plot(x(:,idx.position_x), x(:,idx.position_y), 'r');
     
-    % Draw obstacle
+    % Draw obstacles
     a = linspace(0,2*pi);
-    plot(1.6*cos(a)+5, 1.6*sin(a)-3, 'k');
+    [obstacle_x, obstacle_y, obstacle_radius] = obstacles;
+    for i = 1:length(obstacle_x)
+        r = obstacle_radius(i) - 0.6;
+        plot(r*cos(a)+obstacle_x(i), r*sin(a)+obstacle_y(i), 'k');
+    end
 
     drone_surf = surf(...
         4/8*[-1 1; -1 1],...
